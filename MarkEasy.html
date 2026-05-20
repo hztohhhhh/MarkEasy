@@ -2083,7 +2083,8 @@ const sampleName = 'MarkEasy';
           preserveNode(node, `\n\n${cleanHtmlBlock(node)}\n\n`);
         });
         clone.querySelectorAll('table').forEach((node) => {
-          preserveNode(node, `\n\n${cleanHtmlBlock(node)}\n\n`);
+          const markdownTable = tableToMarkdown(node);
+          preserveNode(node, markdownTable ? `\n\n${markdownTable}\n\n` : `\n\n${cleanHtmlBlock(node)}\n\n`);
         });
         let markdown = turndownService.turndown(clone);
         preserved.forEach((item) => {
@@ -2091,6 +2092,90 @@ const sampleName = 'MarkEasy';
         });
         markdown = markdown.replace(/\n{3,}/g, '\n\n').trim();
         return markdown ? `${markdown}\n` : '';
+      }
+
+      function tableToMarkdown(table) {
+        const rows = Array.from(table.rows || []);
+        if (!rows.length) return '';
+
+        const cells = Array.from(table.querySelectorAll('th,td'));
+        if (!cells.length) return '';
+        if (cells.some((cell) => cell.colSpan > 1 || cell.rowSpan > 1)) {
+          return '';
+        }
+
+        const columnCount = Math.max(...rows.map((row) => row.cells.length));
+        if (!columnCount) return '';
+
+        const firstRow = rows[0];
+        const headerRow = table.tHead && table.tHead.rows.length
+          ? table.tHead.rows[0]
+          : (Array.from(firstRow.cells).some((cell) => cell.tagName.toLowerCase() === 'th') ? firstRow : null);
+        if (!headerRow) return '';
+
+        const headerCells = normalizeMarkdownTableRow(headerRow, columnCount);
+        const separators = Array.from({ length: columnCount }, (_, index) => {
+          const cell = headerRow.cells[index];
+          return getMarkdownTableSeparator(cell);
+        });
+        const bodyRows = rows.filter((row) => row !== headerRow).map((row) => normalizeMarkdownTableRow(row, columnCount));
+        const lines = [
+          formatMarkdownTableRow(headerCells),
+          formatMarkdownTableRow(separators),
+          ...bodyRows.map(formatMarkdownTableRow)
+        ];
+
+        return lines.join('\n');
+      }
+
+      function normalizeMarkdownTableRow(row, columnCount) {
+        const cells = Array.from(row.cells || []).map(markdownTableCellContent);
+        while (cells.length < columnCount) {
+          cells.push('');
+        }
+        return cells.slice(0, columnCount);
+      }
+
+      function markdownTableCellContent(cell) {
+        if (!cell) return '';
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = cell.innerHTML;
+        wrapper.querySelectorAll('[contenteditable], [data-outline-id], [data-outline-number]').forEach((item) => {
+          item.removeAttribute('contenteditable');
+          item.removeAttribute('data-outline-id');
+          item.removeAttribute('data-outline-number');
+        });
+        wrapper.querySelectorAll('.code-copy, .node-edit-button').forEach((item) => item.remove());
+        let markdown = turndownService.turndown(wrapper).trim();
+        markdown = markdown
+          .replace(/\r/g, '')
+          .replace(/\n{2,}/g, '<br>')
+          .replace(/\n/g, '<br>')
+          .replace(/\s+/g, ' ')
+          .trim();
+        return escapeMarkdownTablePipes(markdown);
+      }
+
+      function escapeMarkdownTablePipes(text) {
+        let escaped = '';
+        for (let index = 0; index < text.length; index += 1) {
+          const char = text[index];
+          const previous = index > 0 ? text[index - 1] : '';
+          escaped += char === '|' && previous !== '\\' ? '\\|' : char;
+        }
+        return escaped;
+      }
+
+      function getMarkdownTableSeparator(cell) {
+        const align = String((cell && (cell.getAttribute('align') || cell.style.textAlign)) || '').toLowerCase();
+        if (align === 'center') return ':---:';
+        if (align === 'right' || align === 'end') return '---:';
+        if (align === 'left' || align === 'start') return ':---';
+        return '---';
+      }
+
+      function formatMarkdownTableRow(cells) {
+        return `| ${cells.join(' | ')} |`;
       }
 
       function cleanHtmlBlock(node) {
