@@ -26,6 +26,7 @@ MarkEasy 是一个可直接在浏览器中运行的 Markdown 查看与编辑工�
 .
 ├── MarkEasy.html
 ├── README.md
+├── LICENSE
 ├── markdown-test-case.md
 └── vendor/
     ├── pdfmake.min.js
@@ -37,6 +38,7 @@ MarkEasy 是一个可直接在浏览器中运行的 Markdown 查看与编辑工�
 | 文件 | 说明 |
 | --- | --- |
 | `MarkEasy.html` | 主应用文件，包含页面结构、样式和核心交互逻辑 |
+| `LICENSE` | 项目许可证文件，当前使用 MIT License |
 | `markdown-test-case.md` | 功能测试用 Markdown 示例文档 |
 | `vendor/pdfmake.min.js` | PDF 导出依赖，当前文件头标注为 pdfmake v0.2.20 |
 | `vendor/pdfmake-chinese-vfs.js` | PDF 中文字体虚拟文件系统，用于中文内容导出 |
@@ -147,10 +149,10 @@ Mermaid 和 MathJax 默认通过 CDN 加载。网络不可用、CDN 被拦截或
 ## 发布前检查
 
 - 确认仓库名为 `MarkEasy`。
-- 确认 `MarkEasy.html`、`markdown-test-case.md`、`README.md` 和 `vendor/` 都已提交。
+- 确认 `MarkEasy.html`、`markdown-test-case.md`、`README.md`、`LICENSE` 和 `vendor/` 都已提交。
 - 确认 README 中的 GitHub Pages 访问地址已经替换为你的 GitHub 用户名。
-- 确认是否需要添加 `LICENSE` 文件。公开仓库不等于自动授予开源许可证；如希望他人可以使用、修改或分发，请选择合适的许可证。
+- 确认 GitHub 仓库页面已正确识别 MIT License。
 
 ## 许可证
 
-当前项目尚未包含 `LICENSE` 文件。正式公开发布前，建议根据你的授权意图补充许可证，例如 MIT、Apache-2.0、GPL-3.0 或其他许可证。
+本项目使用 MIT License 授权。详情请参见 [LICENSE](LICENSE) 文件。
